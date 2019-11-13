@@ -1,13 +1,20 @@
 package br.com.jhonyvillani.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.springframework.stereotype.Repository;
 
+import br.com.jhonyvillani.model.Loja;
 import br.com.jhonyvillani.model.Produto;
 
 @Repository
@@ -25,34 +32,41 @@ public class ProdutoDao {
 		return produto;
 	}
 
-	public List<Produto> getProdutos(String nome, Integer categoriaId, Integer lojaId) {
-		String jpql = "select p from Produto p ";
+	public List<Produto> getProdutos(String nome, Integer categoriaId,
+	        Integer lojaId) {
 
+	    CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+	    CriteriaQuery<Produto> query = criteriaBuilder
+	            .createQuery(Produto.class);
+	    Root<Produto> root = query.from(Produto.class);
 
-		if (categoriaId != null)
-		    jpql += "join fetch p.categorias c where c.id = :pCategoria and ";
-		else
-		    jpql += "where ";
+	    Path<String> nomePath = root.<String> get("nome");
+	    Path<Integer> categoriaPath = root.join("categorias").<Integer> get("id");
+	    Path<Integer> lojaPath = root.<Loja> get("loja").<Integer> get("id");
 
-		if (lojaId != null)
-		    jpql += "p.loja.id = :pLoja and ";
-		if (!nome.isEmpty())
-		    jpql += "p.nome like :pNome and ";
+	    List<Predicate> predicates = new ArrayList<Predicate>();
 
-		jpql += "1=1";
+	    if (!nome.isEmpty()) {
+	        Predicate nomeIgual = criteriaBuilder.like(nomePath, "%" + nome + "%");
+	        predicates.add(nomeIgual);
+	    }
 
-		TypedQuery<Produto> query = em.createQuery(jpql, Produto.class);
+	    if (categoriaId != null) {
+	        Predicate categoriaIgual = criteriaBuilder.equal(categoriaPath,
+	                categoriaId);
+	        predicates.add(categoriaIgual);
+	    }
 
-		if (categoriaId != null)
-		    query.setParameter("pCategoria", categoriaId);
-		if (lojaId != null)
-		    query.setParameter("pLoja", lojaId);
-		if (!nome.isEmpty())
-		    query.setParameter("pNome", "%" + nome + "%");
+	    if (lojaId != null) {
+	        Predicate lojaIgual = criteriaBuilder.equal(lojaPath, lojaId);
+	        predicates.add(lojaIgual);
+	    }
 
-		List<Produto> resultList = query.getResultList();
+	    query.where((Predicate[]) predicates.toArray(new Predicate[0]));
 
-		return resultList;
+	    TypedQuery<Produto> typedQuery = em.createQuery(query);
+
+	    return typedQuery.getResultList();
 	}
 
 	public void insere(Produto produto) {
