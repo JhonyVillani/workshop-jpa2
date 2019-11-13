@@ -1,20 +1,13 @@
 package br.com.jhonyvillani.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 import org.springframework.stereotype.Repository;
 
-import br.com.jhonyvillani.model.Loja;
 import br.com.jhonyvillani.model.Produto;
 
 @Repository
@@ -33,7 +26,33 @@ public class ProdutoDao {
 	}
 
 	public List<Produto> getProdutos(String nome, Integer categoriaId, Integer lojaId) {
-		return null;
+		String jpql = "select p from Produto p ";
+
+
+		if (categoriaId != null)
+		    jpql += "join fetch p.categorias c where c.id = :pCategoria and ";
+		else
+		    jpql += "where ";
+
+		if (lojaId != null)
+		    jpql += "p.loja.id = :pLoja and ";
+		if (!nome.isEmpty())
+		    jpql += "p.nome like :pNome and ";
+
+		jpql += "1=1";
+
+		TypedQuery<Produto> query = em.createQuery(jpql, Produto.class);
+
+		if (categoriaId != null)
+		    query.setParameter("pCategoria", categoriaId);
+		if (lojaId != null)
+		    query.setParameter("pLoja", lojaId);
+		if (!nome.isEmpty())
+		    query.setParameter("pNome", "%" + nome + "%");
+
+		List<Produto> resultList = query.getResultList();
+
+		return resultList;
 	}
 
 	public void insere(Produto produto) {
