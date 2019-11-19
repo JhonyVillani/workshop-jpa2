@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.Version;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
@@ -29,6 +30,9 @@ public class Produto {
 	@NotEmpty
 	@Column(columnDefinition = "TEXT")
 	private String descricao;
+	
+	@Version
+	private int versao;
 
 	@Min(20)
 	private double preco;
@@ -97,9 +101,16 @@ public class Produto {
 	public List<Categoria> getCategorias() {
 		return categorias;
 	}
+	
+	public int getVersao() {
+		return versao;
+	}
+	
+	public void setVersao(int versao) {
+		this.versao = versao;
+	}
 
 	public void setCategorias(List<Categoria> categorias) {
 		this.categorias = categorias;
 	}
-
 }
