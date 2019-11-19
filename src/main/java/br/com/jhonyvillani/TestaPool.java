@@ -1,0 +1,22 @@
+package br.com.jhonyvillani;
+
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+public class TestaPool {
+	public static void main(String[] args) throws PropertyVetoException, SQLException {
+		
+		ComboPooledDataSource dataSource = (ComboPooledDataSource) new JpaConfigurator().getDataSource();
+		
+		for(int i = 0; i<10; i++) {
+		Connection connection = dataSource.getConnection();
+		
+		System.out.println(dataSource.getNumBusyConnections() + " ocupada(s)");
+		System.out.println(dataSource.getNumIdleConnections() + " ociosa(s)");
+		System.out.println();
+		}
+	}
+}
